@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 )
 
@@ -13,10 +14,8 @@ func Day1() {
 		panic(err)
 	}
 	scanner := bufio.NewScanner(file)
-	//maxIndex := 0
-	maxElf := 0
+	elves := make([]int, 0)
 	currentElf := 0
-	currentIndex := 1
 	for scanner.Scan() {
 		line := scanner.Text()
 		if line != "" {
@@ -26,15 +25,14 @@ func Day1() {
 			}
 			currentElf = currentElf + num
 		} else {
-			if currentElf > maxElf {
-				//maxIndex = currentIndex
-				maxElf = currentElf
-			}
+			elves = append(elves, currentElf)
 			currentElf = 0
-			currentIndex++
 		}
 	}
+	sort.Sort(sort.Reverse(sort.IntSlice(elves)))
 
-	fmt.Fprintln(os.Stdout, "Highest calories: ", maxElf)
+	combined := elves[0] + elves[1] + elves[2]
+
+	fmt.Fprintln(os.Stdout, "combined top 3: ", combined)
 
 }
