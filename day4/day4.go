@@ -27,23 +27,20 @@ func Day4() {
 		firstStart, firstEnd := getRange(first)
 		secondStart, secondEnd := getRange(second)
 
-		containedInFirst := true
+		overlap := false
 		for i := firstStart; i <= firstEnd; i++ {
-			containedInFirst = containedInFirst && i >= secondStart && i <= secondEnd
-			if !containedInFirst {
+			for j := secondStart; j <= secondEnd; j++ {
+				if i == j {
+					overlap = true
+					break
+				}
+			}
+			if overlap {
 				break
 			}
 		}
 
-		containedInSecond := true
-		for i := secondStart; i <= secondEnd; i++ {
-			containedInSecond = containedInSecond && i >= firstStart && i <= firstEnd
-			if !containedInSecond {
-				break
-			}
-		}
-
-		if containedInFirst || containedInSecond {
+		if overlap {
 			count++
 		}
 
