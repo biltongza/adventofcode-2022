@@ -48,7 +48,6 @@ func Day5() {
 			dst, _ := strconv.Atoi(parts[5])
 			srcLen := len(stacks[src])
 			crates := stacks[src][srcLen-countToMove:]
-			crates = Reverse(crates)
 			stacks[src] = stacks[src][:srcLen-countToMove]
 			stacks[dst] = stacks[dst] + crates
 		}
