@@ -78,12 +78,15 @@ func Day7() {
 			}
 		}
 	}
-	smallDirs := findSmallDirs(root)
-	total := 0
-	for _, smallDir := range smallDirs {
-		total += getSize(smallDir)
-	}
-	fmt.Fprintf(os.Stdout, "Total size of small dirs: %d\n", total)
+	totalUsed := getSize(root)
+	totalFs := 70000000
+	totalFree := totalFs - totalUsed
+	totalRequired := 30000000 - totalFree
+
+	smallestLargeDir := findSmallestLargeDir(root, totalRequired)
+	smallestLargeDirSize := getSize(smallestLargeDir)
+
+	fmt.Fprintf(os.Stdout, "smallestLargeDirSize = : %d\n", smallestLargeDirSize)
 }
 
 func makeDir(name string, parent *Directory) *Directory {
@@ -97,17 +100,27 @@ func makeDir(name string, parent *Directory) *Directory {
 	return dir
 }
 
-func findSmallDirs(dir *Directory) []*Directory {
-	smallDirs := make([]*Directory, 0)
+func findSmallestLargeDir(dir *Directory, requiredSize int) *Directory {
+	var smallestLargeDir *Directory = dir
+	smallestLargeDirSize := getSize(smallestLargeDir)
 	for _, subdir := range dir.dirs {
-		if getSize(subdir) <= 100000 {
-			smallDirs = append(smallDirs, subdir)
+		subdirSize := getSize(subdir)
+		if subdirSize < requiredSize {
+			continue
 		}
-		smallSubdirs := findSmallDirs(subdir)
-		smallDirs = append(smallDirs, smallSubdirs...)
+		if subdirSize >= requiredSize && subdirSize < smallestLargeDirSize {
+			smallestLargeDir = subdir
+			smallestLargeDirSize = subdirSize
+		}
+		nextSmallest := findSmallestLargeDir(subdir, requiredSize)
+		nextSmallestSize := getSize(nextSmallest)
+		if nextSmallestSize >= requiredSize && nextSmallestSize <= smallestLargeDirSize {
+			smallestLargeDir = nextSmallest
+			smallestLargeDirSize = nextSmallestSize
+		}
 	}
 
-	return smallDirs
+	return smallestLargeDir
 }
 
 func getSize(dir *Directory) int {
