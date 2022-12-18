@@ -14,7 +14,7 @@ func Day8() {
 	scanner := bufio.NewScanner(file)
 
 	treeMap := make([][]int, 0)
-	visibleFromOutside := make([][]bool, 0)
+	scenicScores := make([][]int, 0)
 	row := 0
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -22,70 +22,82 @@ func Day8() {
 			break
 		}
 		treeMap = append(treeMap, make([]int, len(line)))
-		visibleFromOutside = append(visibleFromOutside, make([]bool, len(line)))
+		scenicScores = append(scenicScores, make([]int, len(line)))
 		for col, char := range line {
 			treeMap[row][col] = int(char) - 48
 		}
 
 		row++
 	}
-	total := 0
+
 	heightOfMap := len(treeMap)
 	widthOfMap := len(treeMap[0])
 
 	for indexTopDown := 0; indexTopDown < heightOfMap; indexTopDown++ {
-
-		highestLeftRight := treeMap[indexTopDown][0]
-		highestRightLeft := treeMap[indexTopDown][widthOfMap-1]
-		visibleFromOutside[indexTopDown][0] = true
-		visibleFromOutside[indexTopDown][widthOfMap-1] = true
-
 		for indexLeftRight := 0; indexLeftRight < widthOfMap; indexLeftRight++ {
-			indexRightLeft := widthOfMap - 1 - indexLeftRight
-
-			// left to right
-			if treeMap[indexTopDown][indexLeftRight] > highestLeftRight {
-				visibleFromOutside[indexTopDown][indexLeftRight] = true
-				highestLeftRight = treeMap[indexTopDown][indexLeftRight]
-			}
-
-			// right to left
-			if treeMap[indexTopDown][indexRightLeft] > highestRightLeft {
-				visibleFromOutside[indexTopDown][indexRightLeft] = true
-				highestRightLeft = treeMap[indexTopDown][indexRightLeft]
-			}
+			scenicScores[indexTopDown][indexLeftRight] = calculateScore(treeMap, indexLeftRight, indexTopDown)
 		}
 	}
 
-	for indexLeftRight := 0; indexLeftRight < widthOfMap; indexLeftRight++ {
-		highestTopDown := treeMap[0][indexLeftRight]
-		highestBottomUp := treeMap[heightOfMap-1][indexLeftRight]
-		visibleFromOutside[0][indexLeftRight] = true
-		visibleFromOutside[heightOfMap-1][indexLeftRight] = true
-		for indexTopDown := 0; indexTopDown < heightOfMap; indexTopDown++ {
-			indexBottomUp := heightOfMap - 1 - indexTopDown
-
-			// top down
-			if treeMap[indexTopDown][indexLeftRight] > highestTopDown {
-				visibleFromOutside[indexTopDown][indexLeftRight] = true
-				highestTopDown = treeMap[indexTopDown][indexLeftRight]
-			}
-
-			if treeMap[indexBottomUp][indexLeftRight] > highestBottomUp {
-				visibleFromOutside[indexBottomUp][indexLeftRight] = true
-				highestBottomUp = treeMap[indexBottomUp][indexLeftRight]
-			}
-		}
-	}
-
-	for _, row := range visibleFromOutside {
+	highestScenicScore := 0
+	for _, row := range scenicScores {
 		for _, cell := range row {
-			if cell {
-				total++
+			if cell > highestScenicScore {
+				highestScenicScore = cell
 			}
 		}
 	}
 
-	fmt.Fprintf(os.Stdout, "total number of trees visible from outside: %d\n", total)
+	fmt.Fprintf(os.Stdout, "highestScenicScore: %d\n", highestScenicScore)
 
+}
+
+func calculateScore(treeMap [][]int, x int, y int) int {
+	heightOfMap := len(treeMap)
+	widthOfMap := len(treeMap[0])
+
+	scoreUp := 0
+	scoreDown := 0
+	scoreLeft := 0
+	scoreRight := 0
+
+	// look up
+	for yCopy := y - 1; yCopy >= 0; yCopy-- {
+		if treeMap[yCopy][x] < treeMap[y][x] {
+			scoreUp++
+		} else if treeMap[yCopy][x] >= treeMap[y][x] {
+			scoreUp++
+			break
+		}
+	}
+	// look down
+	for yCopy := y + 1; yCopy < heightOfMap; yCopy++ {
+		if treeMap[yCopy][x] < treeMap[y][x] {
+			scoreDown++
+		} else if treeMap[yCopy][x] >= treeMap[y][x] {
+			scoreDown++
+			break
+		}
+	}
+
+	// look left
+	for xCopy := x - 1; xCopy >= 0; xCopy-- {
+		if treeMap[y][xCopy] < treeMap[y][x] {
+			scoreLeft++
+		} else if treeMap[y][xCopy] >= treeMap[y][x] {
+			scoreLeft++
+			break
+		}
+	}
+
+	// look right
+	for xCopy := x + 1; xCopy < widthOfMap; xCopy++ {
+		if treeMap[y][xCopy] < treeMap[y][x] {
+			scoreRight++
+		} else if treeMap[y][xCopy] >= treeMap[y][x] {
+			scoreRight++
+			break
+		}
+	}
+	return scoreUp * scoreDown * scoreLeft * scoreRight
 }
